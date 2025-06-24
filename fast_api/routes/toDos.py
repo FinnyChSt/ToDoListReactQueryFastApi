@@ -33,6 +33,18 @@ async def create_todo(body: ToDoRequest, db: db_dependency ):
     todo_model = Todos(**body.model_dump())
     db.add(todo_model)
     db.commit()
+    return
+
+@router.patch("/{todo_id}/completed", status_code=status.HTTP_204_NO_CONTENT)
+async def complete_todo(todo_id, db:db_dependency):
+    todo_model = db.query(Todos).filter(Todos.id == todo_id).first()
+
+    if todo_model is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"could not find todo with the id of {todo_id}" )
+    todo_model.is_complete = True
+    db.add(todo_model)
+    db.commit()
 
 @router.delete("/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_todo(todo_id:int, db:db_dependency):
